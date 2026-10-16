@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.freedesktop.Accounts
+Exec=/usr/libexec/sinty-accountsd
+User=root
+SystemdService=sinty-accounts.service
