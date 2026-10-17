@@ -10,7 +10,7 @@ import (
 
 	"github.com/godbus/dbus/v5"
 
-	"github.com/singularityos-lab/sinty-accounts/internal/api"
+	"github.com/singularityos-lab/sinty-accounts/accounts"
 )
 
 func connectBus(session bool) (*dbus.Conn, error) {
@@ -48,17 +48,17 @@ func main() {
 	}
 	defer conn.Close()
 
-	svc := api.New(conn, api.Options{Root: *root, InterfacesDir: *interfaces})
+	svc := accounts.New(conn, accounts.Options{Root: *root, InterfacesDir: *interfaces})
 	if err := svc.Export(); err != nil {
 		log.Fatalf("export: %v", err)
 	}
 
-	reply, err := conn.RequestName(api.BusName, dbus.NameFlagDoNotQueue)
+	reply, err := conn.RequestName(accounts.BusName, dbus.NameFlagDoNotQueue)
 	if err != nil {
-		log.Fatalf("request name %s: %v", api.BusName, err)
+		log.Fatalf("request name %s: %v", accounts.BusName, err)
 	}
 	if reply != dbus.RequestNameReplyPrimaryOwner {
-		log.Fatalf("%s already owned (accounts-daemon running?) - not starting", api.BusName)
+		log.Fatalf("%s already owned (accounts-daemon running?) - not starting", accounts.BusName)
 	}
 
 	stop := make(chan struct{})

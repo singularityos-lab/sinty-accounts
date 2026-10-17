@@ -56,6 +56,19 @@ empty: SintyOS keeps no wtmp.
     sinty-accountsd -root DIR             use DIR/etc and DIR/var/lib instead of /
     sinty-accountsd -session-bus          serve on the session bus, for testing
 
+## Use as a library
+
+The daemon is the `accounts` package. SintyOS serves it inside sinty-logind,
+which owns the logins and the seat, so one process answers for users and
+sessions:
+
+    svc := accounts.New(conn, accounts.Options{Root: "/", InterfacesDir: dir})
+    svc.Export()
+    conn.RequestName(accounts.BusName, dbus.NameFlagDoNotQueue)
+    go svc.Watch(stop)
+
+`sinty-accountsd` serves it on its own.
+
 ## Build
 
     make build            # ./sinty-accountsd

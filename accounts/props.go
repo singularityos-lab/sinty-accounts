@@ -1,4 +1,4 @@
-package api
+package accounts
 
 import (
 	"github.com/godbus/dbus/v5"
