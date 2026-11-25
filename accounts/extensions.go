@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/singularityos-lab/libsingularity/src/system/core/go/gvariant"
 )
 
 type extension struct {
@@ -162,7 +163,7 @@ func (e *extension) value(stored, name string) dbus.Variant {
 		return v
 	}
 	if stored != "" {
-		if v, err := dbus.ParseVariant(stored, sig); err == nil {
+		if v, err := gvariant.Parse(stored, sig); err == nil {
 			return v
 		}
 	}
