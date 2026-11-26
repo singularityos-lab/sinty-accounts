@@ -1,15 +1,16 @@
 package accounts
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
-	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
+	"github.com/singularityos-lab/libsingularity/src/system/core/go/dirwatch"
 
 	"github.com/singularityos-lab/sinty-accounts/internal/auth"
 	"github.com/singularityos-lab/sinty-accounts/internal/store"
@@ -121,21 +122,20 @@ func (s *Service) Export() error {
 }
 
 func (s *Service) Watch(stop <-chan struct{}) {
-	t := time.NewTicker(2 * time.Second)
-	defer t.Stop()
-	for {
-		select {
-		case <-stop:
-			return
-		case <-t.C:
-			stamp := s.fileStamp()
-			s.mu.Lock()
-			if stamp != s.stamp {
-				s.reloadLocked()
-			}
-			s.mu.Unlock()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		<-stop
+		cancel()
+	}()
+	dirwatch.Files(ctx, filepath.Join(s.db.Root, "etc"), []string{"passwd", "shadow", "group"}, func() {
+		stamp := s.fileStamp()
+		s.mu.Lock()
+		if stamp != s.stamp {
+			s.reloadLocked()
 		}
-	}
+		s.mu.Unlock()
+	})
 }
 
 func (s *Service) fileStamp() string {
