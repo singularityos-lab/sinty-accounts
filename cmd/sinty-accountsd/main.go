@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+
+	"github.com/singularityos-lab/libsingularity/src/system/core/go/busname"
 
 	"github.com/singularityos-lab/sinty-accounts/accounts"
 )
@@ -53,12 +56,8 @@ func main() {
 		log.Fatalf("export: %v", err)
 	}
 
-	reply, err := conn.RequestName(accounts.BusName, dbus.NameFlagDoNotQueue)
-	if err != nil {
+	if err := busname.Own(context.Background(), conn, accounts.BusName); err != nil {
 		log.Fatalf("request name %s: %v", accounts.BusName, err)
-	}
-	if reply != dbus.RequestNameReplyPrimaryOwner {
-		log.Fatalf("%s already owned (accounts-daemon running?) - not starting", accounts.BusName)
 	}
 
 	stop := make(chan struct{})
